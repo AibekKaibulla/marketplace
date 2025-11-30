@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Marketplace - Mockups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .mockup-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .tab-btn.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .mockup-screen {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .mockup-screen.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .browser-bar {
+            background: #f3f4f6;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #ef4444; }
+        .dot.yellow { background: #f59e0b; }
+        .dot.green { background: #10b981; }
+
+        .url-bar {
+            flex: 1;
+            margin-left: 20px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .screen-content {
+            min-height: 600px;
+        }
+
+        /* Common Styles */
+        .navbar {
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #6366f1;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 60px 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .auth-container {
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .auth-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-block {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            position: relative;
+            background: white;
+            padding: 0 15px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .listing-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .listing-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .listing-content {
+            padding: 20px;
+        }
+
+        .listing-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+
+        .listing-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .listing-desc {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        .listing-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .seller {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .seller-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .footer-note {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <div class="header">
+            <h1>🎓 Student Marketplace Mockups</h1>
+            <p>Interactive design prototypes for all major features</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showScreen('home-guest')">Home (Guest)</button>
+            <button class="tab-btn" onclick="showScreen('home-logged')">Home (Logged In)</button>
+            <button class="tab-btn" onclick="showScreen('login')">Login</button>
+            <button class="tab-btn" onclick="showScreen('register')">Register</button>
+            <button class="tab-btn" onclick="showScreen('listings')">Browse Listings</button>
+            <button class="tab-btn" onclick="showScreen('create-listing')">Create Listing</button>
+            <button class="tab-btn" onclick="showScreen('messages')">Messages</button>
+            <button class="tab-btn" onclick="showScreen('profile')">User Profile</button>
+        </div>
+
+        <!-- Home Guest -->
+        <div id="home-guest" class="mockup-screen active">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <a href="#" class="nav-link">🔐 Login</a>
+                        <button class="btn-primary">✨ Register</button>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>👋 Welcome to Student Marketplace</h1>
+                    <p>Your campus community for buying, selling, and trading</p>
+                </div>
+                <div class="content">
+                    <div class="grid">
+                        <div class="card">
+                            <div class="card-icon">🎓</div>
+                            <h3>For Students, By Students</h3>
+                            <p>Join thousands of students buying and selling safely within your campus community</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">💰</div>
+                            <h3>Save Money</h3>
+                            <p>Find textbooks, furniture, and electronics at student-friendly prices</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">🤝</div>
+                            <h3>Meet & Trade</h3>
+                            <p>Safe campus meetups with verified student sellers</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">🔒</div>
+                            <h3>Secure Platform</h3>
+                            <p>Verified accounts and secure messaging keep your transactions safe</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Logged In -->
+        <div id="home-logged" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="user-avatar">A</div>
+                            <button class="btn-primary" style="background: #ef4444;">🚪 Logout</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero">
+                    <h1>👋 Welcome to Student Marketplace</h1>
+                    <p>Hello, <strong>Aibek</strong>! You're logged in as <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;">buyer</span></p>
+                </div>
+                <div class="content">
+                    <div class="grid">
+                        <div class="card">
+                            <div class="card-icon">📝</div>
+                            <h3>Create Listing</h3>
+                            <p>List items you want to sell or services you offer to other students</p>
+                            <button class="btn-primary btn-block" style="margin-top: 20px;">➕ New Listing</button>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">🔍</div>
+                            <h3>Browse Items</h3>
+                            <p>Discover great deals on textbooks, electronics, furniture, and more</p>
+                            <button class="btn-primary btn-block" style="margin-top: 20px; background: white; color: #6366f1; border: 2px solid #6366f1;">🛍️ Start Shopping</button>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">💬</div>
+                            <h3>Messages</h3>
+                            <p>Chat with buyers and sellers to negotiate deals and arrange meetups</p>
+                            <button class="btn-primary btn-block" style="margin-top: 20px; background: white; color: #6366f1; border: 2px solid #6366f1;">📨 View Messages</button>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon">⭐</div>
+                            <h3>Your Favorites</h3>
+                            <p>Keep track of items you're interested in and get notified of price changes</p>
+                            <button class="btn-primary btn-block" style="margin-top: 20px; background: white; color: #6366f1; border: 2px solid #6366f1;">❤️ My Favorites</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login -->
+        <div id="login" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/login</div>
+            </div>
+            <div class="screen-content">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <div class="auth-icon">🔐</div>
+                        <h2>Welcome Back!</h2>
+                        <p class="auth-subtitle">Sign in to your account</p>
+                        
+                        <form>
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" placeholder="Enter your username" value="username123">
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" placeholder="Enter your password" value="••••••••">
+                            </div>
+                            <button type="submit" class="btn-primary btn-block">🚀 Sign In</button>
+                        </form>
+
+                        <div class="divider">
+                            <span>OR</span>
+                        </div>
+
+                        <p style="text-align: center; color: #6b7280; margin-bottom: 15px;">Don't have an account?</p>
+                        <button class="btn-primary btn-block" style="background: white; color: #6366f1; border: 2px solid #6366f1;">✨ Create Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register -->
+        <div id="register" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/register</div>
+            </div>
+            <div class="screen-content">
+                <div class="auth-container">
+                    <div class="auth-card">
+                        <div class="auth-icon">✨</div>
+                        <h2>Join Us Today!</h2>
+                        <p class="auth-subtitle">Create your account to get started</p>
+                        
+                        <form>
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" placeholder="Choose a username">
+                            </div>
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" placeholder="your.email@university.edu">
+                            </div>
+                            <div class="form-group">
+                                <label>Display Name</label>
+                                <input type="text" placeholder="How should others see you?">
+                            </div>
+                            <div class="form-group">
+                                <label>I want to *</label>
+                                <select>
+                                    <option>🛍️ Buy items</option>
+                                    <option>💰 Sell items</option>
+                                    <option>🔄 Both buy and sell</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <input type="password" placeholder="Create a strong password">
+                            </div>
+                            <button type="submit" class="btn-primary btn-block">🚀 Create Account</button>
+                        </form>
+
+                        <div class="divider">
+                            <span>OR</span>
+                        </div>
+
+                        <p style="text-align: center; color: #6b7280; margin-bottom: 15px;">Already have an account?</p>
+                        <button class="btn-primary btn-block" style="background: white; color: #6366f1; border: 2px solid #6366f1;">🔑 Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Browse Listings -->
+        <div id="listings" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/listings</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+                <div class="content">
+                    <h1 style="color: #1f2937; margin-bottom: 30px;">🔍 Browse Listings</h1>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <input type="text" class="search-box" placeholder="🔍 Search for items...">
+                            <select class="filter-btn">
+                                <option>All Categories</option>
+                                <option>📚 Textbooks</option>
+                                <option>💻 Electronics</option>
+                                <option>🪑 Furniture</option>
+                            </select>
+                            <select class="filter-btn">
+                                <option>Price: Any</option>
+                                <option>Under $50</option>
+                                <option>$50 - $100</option>
+                                <option>Over $100</option>
+                            </select>
+                            <button class="filter-btn" style="background: #6366f1; color: white; border-color: #6366f1;">Apply</button>
+                        </div>
+                    </div>
+
+                    <div class="grid">
+                        <div class="listing-card">
+                            <div class="listing-image">📚</div>
+                            <div class="listing-content">
+                                <div class="listing-price">$45</div>
+                                <div class="listing-title">Calculus Textbook - 9th Edition</div>
+                                <div class="listing-desc">Excellent condition, barely used. All chapters included.</div>
+                                <div class="listing-meta">
+                                    <div class="seller">
+                                        <div class="seller-avatar">J</div>
+                                        <span style="color: #6b7280; font-size: 0.9rem;">John D.</span>
+                                    </div>
+                                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">💬 Message</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="listing-card">
+                            <div class="listing-image">💻</div>
+                            <div class="listing-content">
+                                <div class="listing-price">$350</div>
+                                <div class="listing-title">MacBook Pro 13" 2019</div>
+                                <div class="listing-desc">Great condition, 256GB SSD, 8GB RAM. Charger included.</div>
+                                <div class="listing-meta">
+                                    <div class="seller">
+                                        <div class="seller-avatar">S</div>
+                                        <span style="color: #6b7280; font-size: 0.9rem;">Sarah M.</span>
+                                    </div>
+                                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">💬 Message</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="listing-card">
+                            <div class="listing-image">🪑</div>
+                            <div class="listing-content">
+                                <div class="listing-price">$80</div>
+                                <div class="listing-title">Desk Chair - Ergonomic</div>
+                                <div class="listing-desc">Comfortable office chair, adjustable height, good for long study sessions.</div>
+                                <div class="listing-meta">
+                                    <div class="seller">
+                                        <div class="seller-avatar">M</div>
+                                        <span style="color: #6b7280; font-size: 0.9rem;">Mike R.</span>
+                                    </div>
+                                    <button class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">💬 Message</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Listing -->
+        <div id="create-listing" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/listings/create</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+                <div class="content">
+                    <div style="max-width: 800px; margin: 0 auto;">
+                        <h1 style="color: #1f2937; margin-bottom: 30px;">📝 Create New Listing</h1>
+                        
+                        <div class="card" style="text-align: left;">
+                            <form>
+                                <div class="form-group">
+                                    <label>Title *</label>
+                                    <input type="text" placeholder="e.g., Calculus Textbook - 9th Edition">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Category *</label>
+                                    <select>
+                                        <option>Select a category...</option>
+                                        <option>📚 Textbooks</option>
+                                        <option>💻 Electronics</option>
+                                        <option>🪑 Furniture</option>
+                                        <option>👕 Clothing</option>
+                                        <option>🎮 Gaming</option>
+                                        <option>🎵 Musical Instruments</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Price ($) *</label>
+                                    <input type="number" placeholder="0.00" step="0.01">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Description *</label>
+                                    <textarea style="width: 100%; min-height: 120px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; font-family: inherit;" placeholder="Describe your item in detail..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Condition</label>
+                                    <select>
+                                        <option>Brand New</option>
+                                        <option>Like New</option>
+                                        <option>Good</option>
+                                        <option>Fair</option>
+                                        <option>Poor</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Quantity</label>
+                                    <input type="number" value="1" min="1">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Photos</label>
+                                    <div style="border: 2px dashed #e5e7eb; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer;">
+                                        <div style="font-size: 3rem; margin-bottom: 10px;">📷</div>
+                                        <p style="color: #6b7280;">Click to upload photos or drag and drop</p>
+                                        <p style="color: #9ca3af; font-size: 0.9rem;">PNG, JPG up to 10MB</p>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                                    <button type="submit" class="btn-primary" style="flex: 1;">🚀 Publish Listing</button>
+                                    <button type="button" class="btn-primary" style="flex: 1; background: white; color: #6b7280; border: 2px solid #e5e7eb;">💾 Save as Draft</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/messages</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+                <div class="content" style="padding: 0;">
+                    <div style="display: grid; grid-template-columns: 350px 1fr; height: 600px;">
+                        <!-- Conversations List -->
+                        <div style="border-right: 1px solid #e5e7eb; overflow-y: auto;">
+                            <div style="padding: 20px; border-bottom: 1px solid #e5e7eb;">
+                                <h2 style="color: #1f2937; margin-bottom: 15px;">💬 Messages</h2>
+                                <input type="text" placeholder="🔍 Search conversations..." style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                            </div>
+                            
+                            <div class="conversation" style="padding: 15px 20px; border-bottom: 1px solid #e5e7eb; cursor: pointer; background: #f9fafb;">
+                                <div style="display: flex; gap: 12px; align-items: start;">
+                                    <div class="seller-avatar" style="width: 48px; height: 48px; font-size: 1.2rem;">J</div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <strong style="color: #1f2937;">John D.</strong>
+                                            <span style="color: #9ca3af; font-size: 0.85rem;">2m ago</span>
+                                        </div>
+                                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Sure! When can we meet?</p>
+                                        <div style="display: inline-block; background: #6366f1; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-top: 5px;">Calculus Textbook</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="conversation" style="padding: 15px 20px; border-bottom: 1px solid #e5e7eb; cursor: pointer;">
+                                <div style="display: flex; gap: 12px; align-items: start;">
+                                    <div class="seller-avatar" style="width: 48px; height: 48px; font-size: 1.2rem; background: linear-gradient(135deg, #ef4444, #dc2626);">S</div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <strong style="color: #1f2937;">Sarah M.</strong>
+                                            <span style="color: #9ca3af; font-size: 0.85rem;">1h ago</span>
+                                        </div>
+                                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Is the laptop still available?</p>
+                                        <div style="display: inline-block; background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-top: 5px;">MacBook Pro</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="conversation" style="padding: 15px 20px; border-bottom: 1px solid #e5e7eb; cursor: pointer;">
+                                <div style="display: flex; gap: 12px; align-items: start;">
+                                    <div class="seller-avatar" style="width: 48px; height: 48px; font-size: 1.2rem; background: linear-gradient(135deg, #f59e0b, #d97706);">M</div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <strong style="color: #1f2937;">Mike R.</strong>
+                                            <span style="color: #9ca3af; font-size: 0.85rem;">3h ago</span>
+                                        </div>
+                                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Thanks for the quick response!</p>
+                                        <div style="display: inline-block; background: #e5e7eb; color: #6b7280; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-top: 5px;">Desk Chair</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Area -->
+                        <div style="display: flex; flex-direction: column;">
+                            <!-- Chat Header -->
+                            <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <div class="seller-avatar" style="width: 48px; height: 48px; font-size: 1.2rem;">J</div>
+                                    <div>
+                                        <strong style="color: #1f2937; display: block;">John D.</strong>
+                                        <span style="color: #10b981; font-size: 0.85rem;">● Online</span>
+                                    </div>
+                                </div>
+                                <button class="btn-primary" style="background: white; color: #6366f1; border: 2px solid #6366f1;">📝 View Listing</button>
+                            </div>
+
+                            <!-- Messages -->
+                            <div style="flex: 1; padding: 20px; overflow-y: auto; background: #f9fafb;">
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div class="seller-avatar" style="width: 36px; height: 36px;">J</div>
+                                        <div>
+                                            <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 400px;">
+                                                <p style="color: #1f2937; margin: 0;">Hi! I'm interested in the Calculus textbook. Is it still available?</p>
+                                            </div>
+                                            <span style="color: #9ca3af; font-size: 0.8rem; margin-top: 5px; display: block;">10:30 AM</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+                                    <div>
+                                        <div style="background: #6366f1; color: white; padding: 12px 16px; border-radius: 12px; max-width: 400px;">
+                                            <p style="margin: 0;">Yes, it's still available! It's in excellent condition.</p>
+                                        </div>
+                                        <span style="color: #9ca3af; font-size: 0.8rem; margin-top: 5px; display: block; text-align: right;">10:32 AM</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div class="seller-avatar" style="width: 36px; height: 36px;">J</div>
+                                        <div>
+                                            <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 400px;">
+                                                <p style="color: #1f2937; margin: 0;">Great! Would you accept $40?</p>
+                                            </div>
+                                            <span style="color: #9ca3af; font-size: 0.8rem; margin-top: 5px; display: block;">10:35 AM</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+                                    <div>
+                                        <div style="background: #6366f1; color: white; padding: 12px 16px; border-radius: 12px; max-width: 400px;">
+                                            <p style="margin: 0;">How about $42? That's my lowest price.</p>
+                                        </div>
+                                        <span style="color: #9ca3af; font-size: 0.8rem; margin-top: 5px; display: block; text-align: right;">10:38 AM</span>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div class="seller-avatar" style="width: 36px; height: 36px;">J</div>
+                                        <div>
+                                            <div style="background: white; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); max-width: 400px;">
+                                                <p style="color: #1f2937; margin: 0;">Sure! When can we meet?</p>
+                                            </div>
+                                            <span style="color: #9ca3af; font-size: 0.8rem; margin-top: 5px; display: block;">Just now</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Message Input -->
+                            <div style="padding: 20px; border-top: 1px solid #e5e7eb; background: white;">
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" placeholder="Type a message..." style="flex: 1; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+                                    <button class="btn-primary">📤 Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile -->
+        <div id="profile" class="mockup-screen">
+            <div class="browser-bar">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <div class="url-bar">localhost:4200/profile</div>
+            </div>
+            <div class="screen-content">
+                <div class="navbar">
+                    <div class="brand">🎓 Student Marketplace</div>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">🏠 Home</a>
+                        <div class="user-avatar">A</div>
+                    </div>
+                </div>
+                <div class="content">
+                    <div style="max-width: 900px; margin: 0 auto;">
+                        <!-- Profile Header -->
+                        <div class="card" style="text-align: center; margin-bottom: 30px;">
+                            <div class="user-avatar" style="width: 100px; height: 100px; font-size: 2.5rem; margin: 0 auto 20px;">A</div>
+                            <h2 style="color: #1f2937; margin-bottom: 10px;">Aibek</h2>
+                            <p style="color: #6b7280; margin-bottom: 15px;">@username123</p>
+                            <div style="display: inline-block; background: #6366f1; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 600; text-transform: capitalize;">Buyer</div>
+                            <div style="margin-top: 20px; color: #6b7280;">
+                                <p>📧 username123@university.edu</p>
+                                <p>📅 Member since November 2025</p>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid" style="margin-bottom: 30px;">
+                            <div class="card">
+                                <div style="font-size: 2.5rem; color: #6366f1; font-weight: 700; margin-bottom: 10px;">0</div>
+                                <p style="color: #6b7280;">Active Listings</p>
+                            </div>
+                            <div class="card">
+                                <div style="font-size: 2.5rem; color: #10b981; font-weight: 700; margin-bottom: 10px;">0</div>
+                                <p style="color: #6b7280;">Completed Sales</p>
+                            </div>
+                            <div class="card">
+                                <div style="font-size: 2.5rem; color: #f59e0b; font-weight: 700; margin-bottom: 10px;">5.0</div>
+                                <p style="color: #6b7280;">⭐ Rating</p>
+                            </div>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div style="border-bottom: 2px solid #e5e7eb; margin-bottom: 30px;">
+                            <div style="display: flex; gap: 30px;">
+                                <button style="padding: 15px 0; border: none; background: none; color: #6366f1; border-bottom: 3px solid #6366f1; font-weight: 600; cursor: pointer;">My Listings</button>
+                                <button style="padding: 15px 0; border: none; background: none; color: #6b7280; font-weight: 600; cursor: pointer;">Favorites</button>
+                                <button style="padding: 15px 0; border: none; background: none; color: #6b7280; font-weight: 600; cursor: pointer;">Reviews</button>
+                                <button style="padding: 15px 0; border: none; background: none; color: #6b7280; font-weight: 600; cursor: pointer;">Settings</button>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="card" style="padding: 60px; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">📦</div>
+                            <h3 style="color: #1f2937; margin-bottom: 15px;">No Listings Yet</h3>
+                            <p style="color: #6b7280; margin-bottom: 25px;">Start selling by creating your first listing!</p>
+                            <button class="btn-primary">➕ Create Listing</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <p>💡 <strong>Tip:</strong> Click the tabs above to view different screens. These mockups are interactive and responsive!</p>
+            <p style="margin-top: 10px;">📸 Take screenshots or share this page URL to present the designs</p>
+        </div>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.mockup-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected screen
+            document.getElementById(screenId).classList.add('active');
+            
+            // Add active to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
