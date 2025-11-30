@@ -1,244 +1,193 @@
 <template>
   <nav class="navbar">
-    <div class="nav-container">
-      <router-link to="/" class="brand">
-        <span class="brand-text">Student Marketplace</span>
-      </router-link>
+    <div class="navbar-container">
+      <router-link to="/" class="brand">Student Marketplace</router-link>
       
-      <div class="nav-links">
-        <router-link to="/" class="nav-link">
-          Home
-        </router-link>
+      <div class="nav-menu" :class="{ 'active': mobileMenuOpen }">
+        <router-link to="/" class="nav-link" @click="closeMobileMenu">Home</router-link>
         
-        <template v-if="!user">
-          <router-link to="/login" class="nav-link">
-            Login
-          </router-link>
-          <router-link to="/register" class="nav-link btn-register">
-            Register
-          </router-link>
+        <template v-if="isLoggedIn">
+          <router-link to="/listings" class="nav-link" @click="closeMobileMenu">Browse</router-link>
+          <router-link to="/listings/create" class="nav-link" @click="closeMobileMenu">Sell</router-link>
+          <router-link to="/messages" class="nav-link" @click="closeMobileMenu">Messages</router-link>
+          
+          <div class="nav-actions">
+            <router-link to="/profile" @click="closeMobileMenu">
+              <UserAvatar :username="currentUser?.username || 'User'" size="md" />
+            </router-link>
+            <button class="btn btn-danger btn-sm" @click="handleLogout">Logout</button>
+          </div>
         </template>
         
         <template v-else>
-          <div class="user-menu">
-            <div class="user-info">
-              <div class="user-avatar">{{ userInitial }}</div>
-              <div class="user-details">
-                <div class="user-name">{{ user.display_name || user.username }}</div>
-                <div class="user-role">{{ user.role }}</div>
-              </div>
-            </div>
-            <button @click="logout" class="btn-logout">
-              <span class="link-icon">🚪</span>
-              Logout
-            </button>
+          <div class="nav-actions">
+            <router-link to="/login" class="nav-link" @click="closeMobileMenu">Login</router-link>
+            <router-link to="/register" @click="closeMobileMenu">
+              <button class="btn btn-primary btn-sm">Register</button>
+            </router-link>
           </div>
         </template>
       </div>
+      
+      <button class="mobile-toggle" @click="toggleMobileMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import auth from '../services/auth'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import authService from '../services/auth'
+import UserAvatar from './UserAvatar.vue'
 
 const router = useRouter()
-const user = auth.currentUser // Use reactive ref from auth service
+const mobileMenuOpen = ref(false)
 
-const userInitial = computed(() => {
-  if (!user.value) return ''
-  const name = user.value.display_name || user.value.username
-  return name.charAt(0).toUpperCase()
-})
+// Use the reactive currentUser ref directly from auth service
+// This will automatically update when user logs in/out
+const currentUser = authService.currentUser
+const isLoggedIn = computed(() => !!currentUser.value)
 
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    auth.clearAuth()
-    router.push('/')
-  }
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
+
+const handleLogout = () => {
+  authService.logout()
+  closeMobileMenu()
+  router.push('/')
 }
 </script>
 
 <style scoped>
 .navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 
-.nav-container {
-  max-width: 1200px;
+.navbar-container {
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1rem 1.5rem;
+  padding: var(--spacing-lg) var(--spacing-xl);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
   text-decoration: none;
-  transition: transform 0.2s;
+  transition: color var(--transition-base);
 }
 
 .brand:hover {
-  transform: scale(1.05);
+  color: var(--color-primary-hover);
 }
 
-.brand-icon {
-  font-size: 1.75rem;
-}
-
-.brand-text {
-  display: none;
-}
-
-@media (min-width: 640px) {
-  .brand-text {
-    display: inline;
-  }
-}
-
-.nav-links {
+.nav-menu {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-lg);
 }
 
 .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  font-weight: 500;
-  color: var(--gray);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  transition: all 0.2s;
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
 }
 
 .nav-link:hover {
-  background: var(--gray-light);
-  color: var(--primary);
+  background: var(--color-gray-50);
+  color: var(--color-primary);
 }
 
 .nav-link.router-link-active {
-  color: var(--primary);
-  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
 }
 
-.link-icon {
-  font-size: 1.1rem;
-}
-
-.btn-register {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-register:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.user-menu {
+.nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  background: var(--gray-light);
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.user-details {
+.mobile-toggle {
   display: none;
-}
-
-@media (min-width: 640px) {
-  .user-details {
-    display: block;
-  }
-}
-
-.user-name {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--dark);
-}
-
-.user-role {
-  font-size: 0.75rem;
-  color: var(--gray);
-  text-transform: capitalize;
-}
-
-.btn-logout {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  flex-direction: column;
+  gap: 4px;
   background: transparent;
-  border: 2px solid var(--danger);
-  color: var(--danger);
-  border-radius: 6px;
-  font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  padding: var(--spacing-sm);
 }
 
-.btn-logout:hover {
-  background: var(--danger);
-  color: white;
-  transform: translateY(-1px);
+.mobile-toggle span {
+  width: 24px;
+  height: 2px;
+  background: var(--color-text-primary);
+  transition: all var(--transition-base);
 }
 
-@media (max-width: 640px) {
-  .nav-container {
-    padding: 0.75rem 1rem;
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: var(--spacing-md) var(--spacing-lg);
   }
   
-  .nav-links {
-    gap: 0.25rem;
+  .mobile-toggle {
+    display: flex;
+  }
+  
+  .nav-menu {
+    position: fixed;
+    top: 65px;
+    right: -100%;
+    width: 100%;
+    max-width: 300px;
+    height: calc(100vh - 65px);
+    background: var(--color-white);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-xl);
+    transition: right var(--transition-slow);
+  }
+  
+  .nav-menu.active {
+    right: 0;
   }
   
   .nav-link {
-    padding: 0.5rem;
+    padding: var(--spacing-md);
   }
   
-  .link-icon {
-    font-size: 1.25rem;
+  .nav-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
   }
   
-  .nav-link span:not(.link-icon) {
-    display: none;
+  .nav-actions button {
+    width: 100%;
   }
 }
 </style>

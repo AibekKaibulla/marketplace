@@ -9,7 +9,7 @@ const currentUser = ref(null)
 function initAuth() {
     const token = localStorage.getItem(TOKEN_KEY)
     const userStr = localStorage.getItem(USER_KEY)
-    
+
     if (token && userStr) {
         try {
             currentUser.value = JSON.parse(userStr)
@@ -44,15 +44,25 @@ function getUser() {
     return currentUser.value
 }
 
-async function register({ username, email, password, display_name, role = 'buyer' }) {
-    const payload = { username, email, password, display_name, role }
+function getCurrentUser() {
+    return currentUser.value
+}
+
+async function register({ username, email, password, displayName, role = 'buyer' }) {
+    const payload = {
+        username,
+        email,
+        password,
+        display_name: displayName,  // Backend expects snake_case
+        role
+    }
     const res = await api.post('/api/auth/register', payload)
     const { access_token, user } = res.data
     saveAuth(access_token, user)
     return res.data
 }
 
-async function login({ username, password }) {
+async function login(username, password) {
     const params = new URLSearchParams()
     params.append('username', username)
     params.append('password', password)
@@ -76,6 +86,10 @@ function isAuthenticated() {
     return !!getToken()
 }
 
+function logout() {
+    clearAuth()
+}
+
 api.interceptors.response.use(
     response => response,
     error => {
@@ -94,7 +108,9 @@ api.interceptors.response.use(
 export default {
     register,
     login,
+    logout,
     fetchCurrentUser,
+    getCurrentUser,
     saveAuth,
     clearAuth,
     getToken,

@@ -12,12 +12,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# CORS Configuration - must be added before routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  
+    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],  # Allow both localhost variants
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly include OPTIONS
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
