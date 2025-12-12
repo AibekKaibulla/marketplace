@@ -4,33 +4,45 @@
       <!-- Conversations List -->
       <div class="conversations-panel">
         <div class="conversations-header">
-          <h2>Messages</h2>
+          <h2>{{ $t('messages.title') }}</h2>
           <input 
             type="text" 
             class="form-input"
-            placeholder="Search conversations..."
+            :placeholder="$t('listings.filter.search_placeholder')"
             v-model="searchQuery"
           />
         </div>
         
-        <div class="conversations-list">
+        <div v-if="loadingConversations" class="loading-state">
+          <p class="text-secondary">{{ $t('listings.loading') }}</p>
+        </div>
+        
+        <div v-else class="conversations-list">
           <div 
-            v-for="conv in conversations" 
-            :key="conv.id"
+            v-for="conv in filteredConversations" 
+            :key="`${conv.user.user_id}-${conv.listing?.listing_id || 'none'}`"
             class="conversation-item"
-            :class="{ active: activeConversation === conv.id }"
-            @click="selectConversation(conv.id)"
+            :class="{ active: isActiveConversation(conv) }"
+            @click="selectConversation(conv)"
           >
             <UserAvatar :username="conv.user.username" size="lg" />
             <div class="conversation-info">
               <div class="conversation-header-row">
-                <strong>{{ conv.user.name }}</strong>
-                <span class="conversation-time">{{ conv.lastMessage.time }}</span>
+                <strong>{{ conv.user.display_name || conv.user.username }}</strong>
+                <span class="conversation-time">{{ formatTime(conv.last_message?.sent_at) }}</span>
               </div>
-              <p class="conversation-preview">{{ conv.lastMessage.text }}</p>
-              <span class="badge badge-secondary">{{ conv.listing.title }}</span>
+              <p class="conversation-preview">{{ conv.last_message?.body || 'No messages yet' }}</p>
+              <span v-if="conv.listing" class="badge badge-secondary">{{ conv.listing.title }}</span>
+              <span v-if="conv.unread_count > 0" class="unread-badge">{{ conv.unread_count }}</span>
             </div>
           </div>
+          
+          <EmptyState 
+            v-if="conversations.length === 0"
+            icon="💬"
+            :title="$t('messages.title')"
+            :description="$t('messages.contacts')"
+          />
         </div>
       </div>
       
@@ -40,32 +52,44 @@
           <!-- Chat Header -->
           <div class="chat-header">
             <div class="flex items-center gap-md">
-              <UserAvatar :username="selectedConversation.user.username" size="lg" />
+              <UserAvatar :username="activeConversation.user.username" size="lg" />
               <div>
-                <strong>{{ selectedConversation.user.name }}</strong>
-                <div class="text-success text-sm">● Online</div>
+                <strong>{{ activeConversation.user.display_name || activeConversation.user.username }}</strong>
+                <div class="text-secondary text-sm" v-if="activeConversation.listing">
+                  Re: {{ activeConversation.listing.title }}
+                </div>
               </div>
             </div>
-            <button class="btn btn-secondary">View Listing</button>
+            <router-link 
+              v-if="activeConversation.listing" 
+              :to="`/listings/${activeConversation.listing.listing_id}`"
+              class="btn btn-secondary"
+            >
+              {{ $t('card.view_details') }}
+            </router-link>
           </div>
           
           <!-- Messages -->
-          <div class="messages-area">
+          <div class="messages-area" ref="messagesArea">
+            <div v-if="loadingMessages" class="loading-state">
+              <p class="text-secondary">{{ $t('listings.loading') }}</p>
+            </div>
+            
             <div 
-              v-for="message in selectedConversation.messages" 
-              :key="message.id"
-              :class="['message', message.sent ? 'message-sent' : 'message-received']"
+              v-for="message in messages" 
+              :key="message.message_id"
+              :class="['message', isSentByMe(message) ? 'message-sent' : 'message-received']"
             >
               <UserAvatar 
-                v-if="!message.sent" 
-                :username="selectedConversation.user.username" 
+                v-if="!isSentByMe(message)" 
+                :username="activeConversation.user.username" 
                 size="sm" 
               />
               <div class="message-content">
                 <div class="message-bubble">
-                  <p>{{ message.text }}</p>
+                  <p>{{ message.body }}</p>
                 </div>
-                <span class="message-time">{{ message.time }}</span>
+                <span class="message-time">{{ formatTime(message.sent_at) }}</span>
               </div>
             </div>
           </div>
@@ -75,19 +99,26 @@
             <input 
               type="text" 
               class="form-input"
-              placeholder="Type a message..."
+              :placeholder="$t('messages.type_message')"
               v-model="newMessage"
               @keyup.enter="sendMessage"
+              :disabled="sendingMessage"
             />
-            <button class="btn btn-primary" @click="sendMessage">Send</button>
+            <button 
+              class="btn btn-primary" 
+              @click="sendMessage"
+              :disabled="sendingMessage || !newMessage.trim()"
+            >
+              {{ sendingMessage ? '...' : $t('messages.send') }}
+            </button>
           </div>
         </div>
         
         <EmptyState 
           v-else
           icon="💬"
-          title="Select a Conversation"
-          description="Choose a conversation from the left to start messaging"
+          :title="$t('messages.no_chat_selected')"
+          :description="$t('messages.contacts')"
         />
       </div>
     </div>
@@ -95,68 +126,191 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import UserAvatar from '../components/UserAvatar.vue'
 import EmptyState from '../components/EmptyState.vue'
+import messagesService from '../services/messages'
+import listingsService from '../services/listings'
+import api from '../services/api'
+import authService from '../services/auth'
+
+const { t } = useI18n()
+
+const route = useRoute()
 
 const searchQuery = ref('')
-const activeConversation = ref(1)
+const conversations = ref([])
+const messages = ref([])
+const activeConversation = ref(null)
 const newMessage = ref('')
+const loadingConversations = ref(true)
+const loadingMessages = ref(false)
+const sendingMessage = ref(false)
+const messagesArea = ref(null)
 
-// Mock conversations data
-const conversations = ref([
-  {
-    id: 1,
-    user: { username: 'johnd', name: 'John D.' },
-    listing: { title: 'Calculus Textbook' },
-    lastMessage: { text: 'Sure! When can we meet?', time: '2m ago' },
-    messages: [
-      { id: 1, text: "Hi! I'm interested in the Calculus textbook. Is it still available?", sent: false, time: '10:30 AM' },
-      { id: 2, text: "Yes, it's still available! It's in excellent condition.", sent: true, time: '10:32 AM' },
-      { id: 3, text: 'Great! Would you accept $40?', sent: false, time: '10:35 AM' },
-      { id: 4, text: "How about $42? That's my lowest price.", sent: true, time: '10:38 AM' },
-      { id: 5, text: 'Sure! When can we meet?', sent: false, time: 'Just now' }
-    ]
-  },
-  {
-    id: 2,
-    user: { username: 'sarahm', name: 'Sarah M.' },
-    listing: { title: 'MacBook Pro' },
-    lastMessage: { text: 'Is the laptop still available?', time: '1h ago' },
-    messages: [
-      { id: 1, text: 'Is the laptop still available?', sent: false, time: '9:15 AM' }
-    ]
-  },
-  {
-    id: 3,
-    user: { username: 'miker', name: 'Mike R.' },
-    listing: { title: 'Desk Chair' },
-    lastMessage: { text: 'Thanks for the quick response!', time: '3h ago' },
-    messages: [
-      { id: 1, text: 'Thanks for the quick response!', sent: false, time: '7:20 AM' }
-    ]
+const currentUser = authService.currentUser
+
+// Fetch conversations from API
+async function fetchConversations() {
+  loadingConversations.value = true
+  try {
+    conversations.value = await messagesService.getConversations()
+  } catch (err) {
+    console.error('Error fetching conversations:', err)
+  } finally {
+    loadingConversations.value = false
   }
-])
+}
 
-const selectedConversation = computed(() => {
-  return conversations.value.find(c => c.id === activeConversation.value)
+// Fetch messages for a conversation
+async function fetchMessages() {
+  if (!activeConversation.value) return
+  
+  loadingMessages.value = true
+  try {
+    messages.value = await messagesService.getConversationMessages(
+      activeConversation.value.user.user_id,
+      activeConversation.value.listing?.listing_id
+    )
+    await nextTick()
+    scrollToBottom()
+  } catch (err) {
+    console.error('Error fetching messages:', err)
+  } finally {
+    loadingMessages.value = false
+  }
+}
+
+// Send a message
+async function sendMessage() {
+  if (!newMessage.value.trim() || !activeConversation.value) return
+  
+  sendingMessage.value = true
+  try {
+    const sentMessage = await messagesService.sendMessage(
+      activeConversation.value.user.user_id,
+      newMessage.value,
+      activeConversation.value.listing?.listing_id
+    )
+    messages.value.push(sentMessage)
+    newMessage.value = ''
+    await nextTick()
+    scrollToBottom()
+    
+    // Refresh conversations to update last message
+    fetchConversations()
+  } catch (err) {
+    console.error('Error sending message:', err)
+  } finally {
+    sendingMessage.value = false
+  }
+}
+
+function selectConversation(conv) {
+  activeConversation.value = conv
+  fetchMessages()
+}
+
+function isActiveConversation(conv) {
+  if (!activeConversation.value) return false
+  return activeConversation.value.user.user_id === conv.user.user_id &&
+         activeConversation.value.listing?.listing_id === conv.listing?.listing_id
+}
+
+function isSentByMe(message) {
+  return message.sender_id === currentUser.value?.user_id
+}
+
+function scrollToBottom() {
+  if (messagesArea.value) {
+    messagesArea.value.scrollTop = messagesArea.value.scrollHeight
+  }
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+  
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  return date.toLocaleDateString()
+}
+
+const filteredConversations = computed(() => {
+  if (!searchQuery.value) return conversations.value
+  const query = searchQuery.value.toLowerCase()
+  return conversations.value.filter(conv => 
+    conv.user.username.toLowerCase().includes(query) ||
+    conv.user.display_name?.toLowerCase().includes(query) ||
+    conv.listing?.title.toLowerCase().includes(query)
+  )
 })
 
-const selectConversation = (id) => {
-  activeConversation.value = id
-}
-
-const sendMessage = () => {
-  if (newMessage.value.trim() && selectedConversation.value) {
-    selectedConversation.value.messages.push({
-      id: Date.now(),
-      text: newMessage.value,
-      sent: true,
-      time: 'Just now'
-    })
-    newMessage.value = ''
+// Handle deep links from listing detail (e.g., /messages?to=5&listing=10)
+async function handleDeepLink() {
+  const toUserId = route.query.to
+  const listingId = route.query.listing
+  
+  if (toUserId) {
+    try {
+      // Get user info
+      const userRes = await api.get(`/api/auth/user/${toUserId}`)
+      const user = userRes.data
+      
+      // Get listing info if provided
+      let listing = null
+      if (listingId) {
+        listing = await listingsService.getListing(listingId)
+      }
+      
+      // Create a new conversation object
+      activeConversation.value = {
+        user: {
+          user_id: parseInt(toUserId),
+          username: user.username,
+          display_name: user.display_name
+        },
+        listing: listing ? {
+          listing_id: listing.listing_id,
+          title: listing.title,
+          price: listing.price
+        } : null,
+        last_message: null,
+        unread_count: 0
+      }
+      
+      // Fetch existing messages if any
+      fetchMessages()
+    } catch (err) {
+      console.error('Error handling deep link:', err)
+    }
   }
 }
+
+onMounted(async () => {
+  await fetchConversations()
+  
+  // Check for deep link params
+  if (route.query.to) {
+    handleDeepLink()
+  }
+})
+
+// Watch for route changes
+watch(() => route.query, (newQuery) => {
+  if (newQuery.to) {
+    handleDeepLink()
+  }
+})
 </script>
 
 <style scoped>
@@ -202,6 +356,7 @@ const sendMessage = () => {
   border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background var(--transition-base);
+  position: relative;
 }
 
 .conversation-item:hover {
@@ -235,6 +390,18 @@ const sendMessage = () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.unread-badge {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-lg);
+  background: var(--color-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .chat-panel {
@@ -318,6 +485,11 @@ const sendMessage = () => {
   padding: var(--spacing-lg);
   border-top: 1px solid var(--color-border);
   background: var(--color-white);
+}
+
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-xl);
 }
 
 @media (max-width: 768px) {

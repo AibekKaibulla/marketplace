@@ -2,34 +2,34 @@
   <div class="auth-container">
     <div class="auth-card card">
       <div class="auth-icon">🔐</div>
-      <h2>Welcome Back!</h2>
+      <h2>{{ $t('auth.login.title') }}</h2>
       <p class="auth-subtitle text-secondary">Sign in to your account</p>
       
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label class="form-label">Username</label>
+          <label class="form-label">{{ $t('auth.username') }}</label>
           <input 
             type="text" 
             class="form-input"
-            placeholder="Enter your username"
+            :placeholder="$t('auth.username')"
             v-model="username"
             required
           />
         </div>
         
         <div class="form-group">
-          <label class="form-label">Password</label>
+          <label class="form-label">{{ $t('auth.password') }}</label>
           <input 
             type="password" 
             class="form-input"
-            placeholder="Enter your password"
+            :placeholder="$t('auth.password')"
             v-model="password"
             required
           />
         </div>
         
         <button type="submit" class="btn btn-primary btn-block btn-lg">
-          Sign In
+          {{ $t('auth.login.submit') }}
         </button>
       </form>
       
@@ -37,9 +37,9 @@
         <span>OR</span>
       </div>
       
-      <p class="text-center text-secondary mb-md">Don't have an account?</p>
+      <p class="text-center text-secondary mb-md">{{ $t('auth.login.no_account') }}</p>
       <router-link to="/register">
-        <button class="btn btn-secondary btn-block">Create Account</button>
+        <button class="btn btn-secondary btn-block">{{ $t('auth.register.submit') }}</button>
       </router-link>
     </div>
   </div>

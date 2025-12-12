@@ -4,6 +4,8 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Listings from '../views/Listings.vue'
 import CreateListing from '../views/CreateListing.vue'
+import ListingDetail from '../views/ListingDetail.vue'
+import EditListing from '../views/EditListing.vue'
 import Messages from '../views/Messages.vue'
 import UserProfile from '../views/UserProfile.vue'
 import authService from '../services/auth'
@@ -22,6 +24,17 @@ const routes = [
         path: '/listings/create',
         name: 'CreateListing',
         component: CreateListing,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/listings/:id',
+        name: 'ListingDetail',
+        component: ListingDetail
+    },
+    {
+        path: '/listings/:id/edit',
+        name: 'EditListing',
+        component: EditListing,
         meta: { requiresAuth: true }
     },
     {

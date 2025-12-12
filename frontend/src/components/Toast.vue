@@ -1,56 +1,64 @@
 <template>
-  <div class="app">
-    <NavBar />
-    <main class="main-content">
-      <router-view />
-    </main>
-    
-    <!-- Toast Notifications -->
-    <Teleport to="body">
-      <TransitionGroup name="toast" tag="div" class="toast-container">
-        <div
-          v-for="toast in toasts"
-          :key="toast.id"
-          :class="['toast', `toast-${toast.type}`]"
-        >
-          <span class="toast-icon">{{ toastIcons[toast.type] }}</span>
-          <span class="toast-message">{{ toast.message }}</span>
-          <button class="toast-close" @click="remove(toast.id)">×</button>
-        </div>
-      </TransitionGroup>
-    </Teleport>
-  </div>
+  <Teleport to="body">
+    <TransitionGroup name="toast" tag="div" class="toast-container">
+      <div
+        v-for="toast in toasts"
+        :key="toast.id"
+        :class="['toast', `toast-${toast.type}`]"
+      >
+        <span class="toast-icon">{{ icons[toast.type] }}</span>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button class="toast-close" @click="removeToast(toast.id)">×</button>
+      </div>
+    </TransitionGroup>
+  </Teleport>
 </template>
 
-
 <script setup>
-import NavBar from './components/NavBar.vue'
-import { useToast } from './composables/useToast'
+import { ref } from 'vue'
 
-const { toasts, remove } = useToast()
+const toasts = ref([])
+let toastId = 0
 
-const toastIcons = {
+const icons = {
   success: '✓',
   error: '✕',
   warning: '⚠',
   info: 'ℹ'
 }
-</script>
 
-
-<style>
-/* Global app styles */
-.main-content {
-  max-width: 1200px;
-  margin: 24px auto;
-  padding: 0 16px;
-  min-height: calc(100vh - 160px);
+function addToast(message, type = 'info', duration = 4000) {
+  const id = ++toastId
+  toasts.value.push({ id, message, type })
+  
+  if (duration > 0) {
+    setTimeout(() => removeToast(id), duration)
+  }
+  
+  return id
 }
 
-/* Toast styles */
+function removeToast(id) {
+  const index = toasts.value.findIndex(t => t.id === id)
+  if (index > -1) {
+    toasts.value.splice(index, 1)
+  }
+}
+
+// Expose methods for use in other components
+defineExpose({
+  success: (msg) => addToast(msg, 'success'),
+  error: (msg) => addToast(msg, 'error'),
+  warning: (msg) => addToast(msg, 'warning'),
+  info: (msg) => addToast(msg, 'info'),
+  remove: removeToast
+})
+</script>
+
+<style scoped>
 .toast-container {
   position: fixed;
-  top: 80px;
+  top: 20px;
   right: 20px;
   z-index: 10000;
   display: flex;
@@ -118,7 +126,7 @@ const toastIcons = {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Toast animations */
+/* Animations */
 .toast-enter-active {
   animation: slideIn 0.3s ease-out;
 }
@@ -146,14 +154,6 @@ const toastIcons = {
   to {
     transform: translateX(100%);
     opacity: 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .toast-container {
-    left: 10px;
-    right: 10px;
-    max-width: none;
   }
 }
 </style>

@@ -1,153 +1,222 @@
 <template>
   <div class="container">
-    <h1 class="page-title mb-xl">Browse Listings</h1>
+    <h1 class="page-title mb-xl">{{ $t('listings.title') }}</h1>
     
-    <FilterBar @filter="handleFilter" />
+    <FilterBar @filter="handleFilter" :categories="categories" />
     
-    <div class="grid grid-auto-fit">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="text-secondary">{{ $t('listings.loading') }}</p>
+    </div>
+    
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state card">
+      <p class="text-danger">{{ error }}</p>
+      <button class="btn btn-primary mt-md" @click="fetchListings">{{ $t('listings.retry') }}</button>
+    </div>
+    
+    <!-- Results Header -->
+    <div v-else-if="filteredListings.length > 0" class="results-header">
+      <p class="results-count">
+        <strong>{{ filteredListings.length }}</strong> {{ $t('listings.count') }}
+      </p>
+    </div>
+    
+    <!-- Listings Grid -->
+    <div v-if="!loading && !error && filteredListings.length > 0" class="grid grid-auto-fit">
       <ListingCard 
         v-for="listing in filteredListings" 
-        :key="listing.id"
-        :listing="listing"
+        :key="listing.listing_id"
+        :listing="formatListing(listing)"
         @message="handleMessage"
       />
     </div>
     
     <EmptyState 
-      v-if="filteredListings.length === 0"
+      v-if="!loading && !error && filteredListings.length === 0"
       icon="🔍"
-      title="No Listings Found"
-      description="Try adjusting your search filters or check back later for new items"
+      :title="$t('listings.empty.title')"
+      :description="$t('listings.empty.desc')"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ListingCard from '../components/ListingCard.vue'
 import FilterBar from '../components/FilterBar.vue'
 import EmptyState from '../components/EmptyState.vue'
+import listingsService from '../services/listings'
+import categoriesService from '../services/categories'
 
 const router = useRouter()
 
-// Mock data for demonstration
-const listings = ref([
-  {
-    id: 1,
-    title: 'Calculus Textbook - 9th Edition',
-    description: 'Excellent condition, barely used. All chapters included.',
-    price: 45.00,
-    category: 'Textbooks',
-    seller: {
-      username: 'johnd',
-      displayName: 'John D.'
-    }
-  },
-  {
-    id: 2,
-    title: 'MacBook Pro 13" 2019',
-    description: 'Great condition, 256GB SSD, 8GB RAM. Charger included.',
-    price: 350.00,
-    category: 'Electronics',
-    seller: {
-      username: 'sarahm',
-      displayName: 'Sarah M.'
-    }
-  },
-  {
-    id: 3,
-    title: 'Desk Chair - Ergonomic',
-    description: 'Comfortable office chair, adjustable height, good for long study sessions.',
-    price: 80.00,
-    category: 'Furniture',
-    seller: {
-      username: 'miker',
-      displayName: 'Mike R.'
-    }
-  },
-  {
-    id: 4,
-    title: 'Python Programming Book',
-    description: 'Learn Python the Hard Way - Like new condition',
-    price: 25.00,
-    category: 'Textbooks',
-    seller: {
-      username: 'emilyt',
-      displayName: 'Emily T.'
-    }
-  },
-  {
-    id: 5,
-    title: 'Gaming Keyboard RGB',
-    description: 'Mechanical keyboard with RGB lighting, barely used',
-    price: 65.00,
-    category: 'Electronics',
-    seller: {
-      username: 'alexw',
-      displayName: 'Alex W.'
-    }
-  },
-  {
-    id: 6,
-    title: 'Mini Fridge',
-    description: 'Perfect for dorm room, works great',
-    price: 120.00,
-    category: 'Furniture',
-    seller: {
-      username: 'jessical',
-      displayName: 'Jessica L.'
-    }
-  }
-])
+const listings = ref([])
+const categories = ref([])
+const loading = ref(true)
+const error = ref(null)
 
 const filters = ref({
   search: '',
   category: '',
-  priceRange: ''
+  condition: '',
+  priceRange: '',
+  sortBy: 'newest'
 })
 
-const filteredListings = computed(() => {
-  return listings.value.filter(listing => {
-    // Search filter
+// Fetch listings from API
+async function fetchListings() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const apiFilters = {}
+    
     if (filters.value.search) {
-      const searchLower = filters.value.search.toLowerCase()
-      const matchesSearch = 
-        listing.title.toLowerCase().includes(searchLower) ||
-        listing.description.toLowerCase().includes(searchLower)
-      if (!matchesSearch) return false
+      apiFilters.search = filters.value.search
     }
     
-    // Category filter
-    if (filters.value.category && listing.category !== filters.value.category) {
-      return false
+    if (filters.value.category) {
+      // Find category ID by name
+      const cat = categories.value.find(c => c.name === filters.value.category)
+      if (cat) apiFilters.category_id = cat.category_id
     }
     
-    // Price range filter
+    if (filters.value.condition) {
+      apiFilters.condition = filters.value.condition
+    }
+    
     if (filters.value.priceRange) {
-      const price = listing.price
-      if (filters.value.priceRange === '0-50' && price > 50) return false
-      if (filters.value.priceRange === '50-100' && (price < 50 || price > 100)) return false
-      if (filters.value.priceRange === '100-500' && (price < 100 || price > 500)) return false
-      if (filters.value.priceRange === '500+' && price < 500) return false
+      // 0-25 USD -> 0 - 12,500 KZT
+      if (filters.value.priceRange === '0-12500') {
+        apiFilters.max_price = 25
+      } else if (filters.value.priceRange === '12500-25000') {
+        apiFilters.min_price = 25
+        apiFilters.max_price = 50
+      } else if (filters.value.priceRange === '25000-50000') {
+        apiFilters.min_price = 50
+        apiFilters.max_price = 100
+      } else if (filters.value.priceRange === '50000-125000') {
+        apiFilters.min_price = 100
+        apiFilters.max_price = 250
+      } else if (filters.value.priceRange === '125000+') {
+        apiFilters.min_price = 250
+      }
     }
     
-    return true
-  })
-})
+    apiFilters.sort_by = filters.value.sortBy || 'newest'
+    
+    listings.value = await listingsService.getListings(apiFilters)
+  } catch (err) {
+    console.error('Error fetching listings:', err)
+    error.value = 'Failed to load listings. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
 
-const handleFilter = (newFilters) => {
+// Fetch categories from API
+async function fetchCategories() {
+  try {
+    categories.value = await categoriesService.getCategories()
+  } catch (err) {
+    console.error('Error fetching categories:', err)
+  }
+}
+
+// Format API listing to component format
+function formatListing(listing) {
+  return {
+    id: listing.listing_id,
+    title: listing.title,
+    description: listing.description,
+    // Convert USD to KZT for display (approx 1 USD = 500 KZT)
+    price: parseFloat(listing.price) * 500,
+    category: listing.category?.name || 'Other',
+    image: listing.photos && listing.photos.length > 0 ? listing.photos[0].url : null,
+    viewCount: listing.view_count || 0,
+    sellerId: listing.seller_id,
+    seller: {
+      user_id: listing.seller?.user_id || listing.seller_id,
+      username: listing.seller?.username || 'unknown',
+      displayName: listing.seller?.display_name || listing.seller?.username || 'Unknown'
+    }
+  }
+}
+
+const filteredListings = computed(() => listings.value)
+
+const handleFilter = async (newFilters) => {
   filters.value = newFilters
+  await fetchListings()
 }
 
 const handleMessage = (listing) => {
-  // Navigate to messages with listing context
-  router.push({ path: '/messages', query: { listing: listing.id } })
+  router.push({ 
+    path: '/messages', 
+    query: { 
+      to: listing.sellerId || listing.seller?.user_id,
+      listing: listing.id 
+    } 
+  })
 }
+
+onMounted(async () => {
+  await fetchCategories()
+  await fetchListings()
+})
 </script>
 
 <style scoped>
 .page-title {
   color: var(--color-text-primary);
+}
+
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-3xl);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--spacing-lg);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.results-count {
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.results-count strong {
+  color: var(--color-text-primary);
+}
+
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
 }
 </style>

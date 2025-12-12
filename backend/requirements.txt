@@ -6,3 +6,6 @@ python-jose[cryptography]==3.3.0
 bcrypt==5.0.0 
 python-dotenv==1.0.0
 pydantic[email]==2.5.0
+python-multipart
+sqladmin
+itsdangerous

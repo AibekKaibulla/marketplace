@@ -1,34 +1,54 @@
 <template>
   <div class="container container-sm">
-    <h1 class="page-title mb-xl">{{ $t('create.title') }}</h1>
+    <h1 class="page-title mb-xl">{{ $t('edit.title') }}</h1>
     
-    <!-- Error Message -->
-    <div v-if="error" class="error-banner mb-lg">
-      <p>{{ error }}</p>
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>{{ $t('listings.loading') }}</p>
     </div>
     
-    <div class="card">
+    <!-- Error Message -->
+    <div v-else-if="error" class="error-banner mb-lg">
+      <p>{{ error }}</p>
+      <router-link to="/profile" class="btn btn-secondary mt-md">{{ $t('card.view_details') }}</router-link>
+    </div>
+    
+    <div v-else class="card">
       <form @submit.prevent="handleSubmit">
-        <!-- Image Upload Section -->
+        <!-- Current Photos -->
         <div class="form-group">
           <label class="form-label">{{ $t('create.form.images') }}</label>
           <div class="photo-upload-area">
-            <!-- Uploaded Photos -->
             <div 
-              v-for="(photo, index) in uploadedPhotos" 
-              :key="index"
+              v-for="photo in existingPhotos" 
+              :key="photo.photo_id"
               class="photo-preview"
             >
-              <img :src="photo.preview" :alt="`Photo ${index + 1}`" />
+              <img :src="getImageUrl(photo.url)" :alt="photo.alt_text" />
               <button 
                 type="button" 
                 class="remove-photo" 
-                @click="removePhoto(index)"
+                @click="removeExistingPhoto(photo)"
+              >×</button>
+            </div>
+            
+            <!-- New Photos -->
+            <div 
+              v-for="(photo, index) in newPhotos" 
+              :key="`new-${index}`"
+              class="photo-preview new"
+            >
+              <img :src="photo.preview" :alt="`New Photo ${index + 1}`" />
+              <button 
+                type="button" 
+                class="remove-photo" 
+                @click="removeNewPhoto(index)"
               >×</button>
             </div>
             
             <!-- Upload Button -->
-            <label v-if="uploadedPhotos.length < 5" class="photo-upload-btn">
+            <label v-if="totalPhotos < 5" class="photo-upload-btn">
               <input 
                 type="file" 
                 accept="image/*" 
@@ -113,6 +133,25 @@
         </div>
         
         <div class="form-group">
+          <label class="form-label">{{ $t('status.label') }}</label>
+          <div class="status-selector">
+            <label 
+              v-for="st in statuses" 
+              :key="st.value"
+              :class="['status-option', { active: formData.status === st.value }]"
+            >
+              <input 
+                type="radio" 
+                :value="st.value" 
+                v-model="formData.status"
+                hidden
+              />
+              {{ st.label }}
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
           <label class="form-label">{{ $t('create.form.description') }} *</label>
           <textarea 
             class="form-textarea"
@@ -129,37 +168,56 @@
             class="btn btn-primary btn-lg"
             :disabled="submitting"
           >
-            {{ submitting ? 'Publishing...' : $t('create.form.submit') }}
+            {{ submitting ? 'Saving...' : $t('edit.save') }}
           </button>
-          <button 
-            type="button" 
-            class="btn btn-ghost btn-lg" 
-            @click="saveDraft"
-            :disabled="submitting"
+          <router-link 
+            :to="`/listings/${listingId}`"
+            class="btn btn-ghost btn-lg"
           >
-            {{ $t('create.form.cancel') }}
-          </button>
+            {{ $t('edit.cancel') }}
+          </router-link>
         </div>
       </form>
+      
+      <!-- Danger Zone -->
+      <div class="danger-zone mt-xl">
+        <h3>{{ $t('edit.danger_zone') }}</h3>
+        <p class="text-secondary">{{ $t('edit.delete_warning') }}</p>
+        <button 
+          class="btn btn-danger" 
+          @click="handleDelete"
+          :disabled="deleting"
+        >
+          {{ deleting ? 'Deleting...' : $t('edit.delete_btn') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import listingsService from '../services/listings'
 import categoriesService from '../services/categories'
 import api from '../services/api'
+import { useToast } from '../composables/useToast'
 
+const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const { t } = useI18n()
 
+const listingId = computed(() => route.params.id)
 const categories = ref([])
+const loading = ref(true)
 const submitting = ref(false)
+const deleting = ref(false)
 const error = ref(null)
-const uploadedPhotos = ref([])
+const existingPhotos = ref([])
+const newPhotos = ref([])
+const photosToDelete = ref([])
 
 const conditions = computed(() => [
   { value: 'brand-new', label: t('listings.condition.new') },
@@ -169,14 +227,55 @@ const conditions = computed(() => [
   { value: 'poor', label: t('listings.condition.poor') }
 ])
 
+const statuses = computed(() => [
+  { value: 'published', label: t('status.published') },
+  { value: 'draft', label: t('status.draft') },
+  { value: 'sold', label: t('status.sold') }
+])
+
 const formData = ref({
   title: '',
   category_id: '',
   price: '',
   description: '',
   condition: 'good',
-  quantity: 1
+  quantity: 1,
+  status: 'published'
 })
+
+const totalPhotos = computed(() => existingPhotos.value.length + newPhotos.value.length)
+
+function getImageUrl(url) {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `http://localhost:8000${url}`
+}
+
+async function fetchListing() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const listing = await listingsService.getListing(listingId.value)
+    
+    formData.value = {
+      title: listing.title,
+      category_id: listing.category_id || '',
+      price: parseFloat(listing.price),
+      description: listing.description || '',
+      condition: listing.condition || 'good',
+      quantity: listing.quantity || 1,
+      status: listing.status || 'published'
+    }
+    
+    existingPhotos.value = listing.photos || []
+  } catch (err) {
+    console.error('Error fetching listing:', err)
+    error.value = 'Failed to load listing. You may not have permission to edit it.'
+  } finally {
+    loading.value = false
+  }
+}
 
 async function fetchCategories() {
   try {
@@ -188,12 +287,12 @@ async function fetchCategories() {
 
 function handleFileSelect(event) {
   const files = Array.from(event.target.files)
-  const maxPhotos = 5 - uploadedPhotos.value.length
+  const maxPhotos = 5 - totalPhotos.value
   
   files.slice(0, maxPhotos).forEach(file => {
     const reader = new FileReader()
     reader.onload = (e) => {
-      uploadedPhotos.value.push({
+      newPhotos.value.push({
         file: file,
         preview: e.target.result
       })
@@ -201,21 +300,25 @@ function handleFileSelect(event) {
     reader.readAsDataURL(file)
   })
   
-  // Reset input
   event.target.value = ''
 }
 
-function removePhoto(index) {
-  uploadedPhotos.value.splice(index, 1)
+function removeExistingPhoto(photo) {
+  existingPhotos.value = existingPhotos.value.filter(p => p.photo_id !== photo.photo_id)
+  photosToDelete.value.push(photo.photo_id)
 }
 
-async function uploadPhotos(listingId) {
-  for (const photo of uploadedPhotos.value) {
-    const formData = new FormData()
-    formData.append('file', photo.file)
+function removeNewPhoto(index) {
+  newPhotos.value.splice(index, 1)
+}
+
+async function uploadNewPhotos() {
+  for (const photo of newPhotos.value) {
+    const formDataUpload = new FormData()
+    formDataUpload.append('file', photo.file)
     
     try {
-      await api.post(`/api/photos/listing/${listingId}`, formData, {
+      await api.post(`/api/photos/listing/${listingId.value}`, formDataUpload, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
     } catch (err) {
@@ -224,64 +327,64 @@ async function uploadPhotos(listingId) {
   }
 }
 
+async function deletePhotos() {
+  for (const photoId of photosToDelete.value) {
+    try {
+      await api.delete(`/api/photos/${photoId}`)
+    } catch (err) {
+      console.error('Error deleting photo:', err)
+    }
+  }
+}
+
 const handleSubmit = async () => {
   submitting.value = true
-  error.value = null
   
   try {
     const payload = {
       ...formData.value,
       category_id: formData.value.category_id || null,
-      price: parseFloat(formData.value.price),
-      status: 'published'
+      price: parseFloat(formData.value.price)
     }
     
-    const listing = await listingsService.createListing(payload)
+    await listingsService.updateListing(listingId.value, payload)
     
-    // Upload photos
-    if (uploadedPhotos.value.length > 0) {
-      await uploadPhotos(listing.listing_id)
-    }
+    // Handle photo changes
+    await deletePhotos()
+    await uploadNewPhotos()
     
-    router.push(`/listings/${listing.listing_id}`)
+    toast.success('Listing updated successfully!')
+    router.push(`/listings/${listingId.value}`)
   } catch (err) {
-    console.error('Error creating listing:', err)
-    error.value = err.response?.data?.detail || 'Failed to create listing. Please try again.'
+    console.error('Error updating listing:', err)
+    toast.error(err.response?.data?.detail || 'Failed to update listing')
   } finally {
     submitting.value = false
   }
 }
 
-const saveDraft = async () => {
-  submitting.value = true
-  error.value = null
+const handleDelete = async () => {
+  if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+    return
+  }
+  
+  deleting.value = true
   
   try {
-    const payload = {
-      ...formData.value,
-      category_id: formData.value.category_id || null,
-      price: parseFloat(formData.value.price) || 0,
-      status: 'draft'
-    }
-    
-    const listing = await listingsService.createListing(payload)
-    
-    // Upload photos
-    if (uploadedPhotos.value.length > 0) {
-      await uploadPhotos(listing.listing_id)
-    }
-    
+    await listingsService.deleteListing(listingId.value)
+    toast.success('Listing deleted')
     router.push('/profile')
   } catch (err) {
-    console.error('Error saving draft:', err)
-    error.value = err.response?.data?.detail || 'Failed to save draft. Please try again.'
+    console.error('Error deleting listing:', err)
+    toast.error('Failed to delete listing')
   } finally {
-    submitting.value = false
+    deleting.value = false
   }
 }
 
 onMounted(() => {
   fetchCategories()
+  fetchListing()
 })
 </script>
 
@@ -290,12 +393,32 @@ onMounted(() => {
   color: var(--color-text-primary);
 }
 
+.loading-state {
+  text-align: center;
+  padding: var(--spacing-3xl);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--spacing-lg);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .error-banner {
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #dc2626;
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-md);
+  text-align: center;
 }
 
 .photo-upload-area {
@@ -311,6 +434,10 @@ onMounted(() => {
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 2px solid var(--color-border);
+}
+
+.photo-preview.new {
+  border-color: var(--color-primary);
 }
 
 .photo-preview img {
@@ -373,13 +500,15 @@ onMounted(() => {
   gap: var(--spacing-lg);
 }
 
-.condition-selector {
+.condition-selector,
+.status-selector {
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
-.condition-option {
+.condition-option,
+.status-option {
   padding: var(--spacing-sm) var(--spacing-lg);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-full);
@@ -388,11 +517,13 @@ onMounted(() => {
   font-weight: var(--font-weight-medium);
 }
 
-.condition-option:hover {
+.condition-option:hover,
+.status-option:hover {
   border-color: var(--color-primary);
 }
 
-.condition-option.active {
+.condition-option.active,
+.status-option.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
@@ -404,8 +535,29 @@ onMounted(() => {
   margin-top: var(--spacing-xl);
 }
 
-.form-actions button {
+.form-actions > * {
   flex: 1;
+  text-align: center;
+}
+
+.danger-zone {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--spacing-xl);
+}
+
+.danger-zone h3 {
+  color: #dc2626;
+  margin-bottom: var(--spacing-sm);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
 }
 
 @media (max-width: 768px) {
@@ -415,19 +567,6 @@ onMounted(() => {
   
   .form-actions {
     flex-direction: column;
-  }
-  
-  .form-actions button {
-    width: 100%;
-  }
-  
-  .condition-selector {
-    gap: var(--spacing-xs);
-  }
-  
-  .condition-option {
-    padding: var(--spacing-xs) var(--spacing-md);
-    font-size: var(--font-size-sm);
   }
 }
 </style>

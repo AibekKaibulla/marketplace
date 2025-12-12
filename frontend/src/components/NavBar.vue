@@ -4,27 +4,29 @@
       <router-link to="/" class="brand">Student Marketplace</router-link>
       
       <div class="nav-menu" :class="{ 'active': mobileMenuOpen }">
-        <router-link to="/" class="nav-link" @click="closeMobileMenu">Home</router-link>
+        <router-link to="/" class="nav-link" @click="closeMobileMenu">{{ $t('nav.home') }}</router-link>
         
         <template v-if="isLoggedIn">
-          <router-link to="/listings" class="nav-link" @click="closeMobileMenu">Browse</router-link>
-          <router-link to="/listings/create" class="nav-link" @click="closeMobileMenu">Sell</router-link>
-          <router-link to="/messages" class="nav-link" @click="closeMobileMenu">Messages</router-link>
+          <router-link to="/listings" class="nav-link" @click="closeMobileMenu">{{ $t('nav.browse') }}</router-link>
+          <router-link to="/listings/create" class="nav-link" @click="closeMobileMenu">{{ $t('nav.sell') }}</router-link>
+          <router-link to="/messages" class="nav-link" @click="closeMobileMenu">{{ $t('nav.messages') }}</router-link>
           
           <div class="nav-actions">
             <router-link to="/profile" @click="closeMobileMenu">
               <UserAvatar :username="currentUser?.username || 'User'" size="md" />
             </router-link>
-            <button class="btn btn-danger btn-sm" @click="handleLogout">Logout</button>
+            <button class="btn btn-danger btn-sm" @click="handleLogout">{{ $t('nav.logout') }}</button>
+            <LanguageSwitcher />
           </div>
         </template>
         
         <template v-else>
           <div class="nav-actions">
-            <router-link to="/login" class="nav-link" @click="closeMobileMenu">Login</router-link>
+            <router-link to="/login" class="nav-link" @click="closeMobileMenu">{{ $t('nav.login') }}</router-link>
             <router-link to="/register" @click="closeMobileMenu">
-              <button class="btn btn-primary btn-sm">Register</button>
+              <button class="btn btn-primary btn-sm">{{ $t('nav.register') }}</button>
             </router-link>
+            <LanguageSwitcher />
           </div>
         </template>
       </div>
@@ -43,6 +45,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import authService from '../services/auth'
 import UserAvatar from './UserAvatar.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const router = useRouter()
 const mobileMenuOpen = ref(false)

@@ -1,0 +1,140 @@
+{
+    "nav": {
+        "home": "Home",
+        "browse": "Browse",
+        "sell": "Sell",
+        "messages": "Messages",
+        "login": "Login",
+        "register": "Register",
+        "logout": "Logout",
+        "profile": "Profile"
+    },
+    "listings": {
+        "title": "Browse Listings",
+        "count": "listings found",
+        "loading": "Loading listings...",
+        "retry": "Retry",
+        "filter": {
+            "search_placeholder": "Search listings...",
+            "all_categories": "All Categories",
+            "price_range": "Price Range",
+            "condition": "Condition",
+            "sort_by": "Sort By"
+        },
+        "condition": {
+            "new": "New",
+            "like_new": "Like New",
+            "good": "Good",
+            "fair": "Fair",
+            "poor": "Poor"
+        },
+        "empty": {
+            "title": "No Listings Found",
+            "desc": "Try adjusting your search filters or check back later"
+        }
+    },
+    "card": {
+        "view_details": "View Details",
+        "by": "by"
+    },
+    "home": {
+        "welcome": "Welcome to Student Marketplace",
+        "subtitle": "Hello, {name}!",
+        "guest_subtitle": "Buy and sell items within your campus community",
+        "create_listing": {
+            "title": "Create Listing",
+            "desc": "List items you want to sell or services you offer to other students",
+            "btn": "New Listing"
+        },
+        "browse": {
+            "title": "Browse Items",
+            "desc": "Discover great deals on textbooks, electronics, furniture, and more",
+            "btn": "Start Shopping"
+        },
+        "messages": {
+            "title": "Messages",
+            "desc": "Chat with buyers and sellers to negotiate deals and arrange meetups",
+            "btn": "View Messages"
+        }
+    },
+    "details": {
+        "price": "Price",
+        "condition": "Condition",
+        "category": "Category",
+        "status": "Status",
+        "seller": "Seller",
+        "description": "Description",
+        "contact_seller": "Contact Seller",
+        "add_favorite": "Add to Favorites",
+        "remove_favorite": "Remove from Favorites",
+        "back": "Back to Listings"
+    },
+    "create": {
+        "title": "Create New Listing",
+        "form": {
+            "title": "Title",
+            "description": "Description",
+            "price": "Price (KZT)",
+            "category": "Category",
+            "condition": "Condition",
+            "quantity": "Quantity",
+            "images": "Images",
+            "add_photo": "Add Photo",
+            "submit": "Create Listing",
+            "cancel": "Cancel"
+        },
+        "placeholders": {
+            "title": "e.g., Calculus Textbook, Gaming Laptop",
+            "description": "Describe the item's condition, features, etc.",
+            "price": "0"
+        }
+    },
+    "messages": {
+        "title": "Messages",
+        "no_chat_selected": "Select a conversation to start chatting",
+        "type_message": "Type a message...",
+        "send": "Send",
+        "contacts": "Contacts"
+    },
+    "profile": {
+        "title": "My Profile",
+        "tabs": {
+            "listings": "My Listings",
+            "favorites": "Favorites",
+            "settings": "Settings"
+        },
+        "edit_profile": "Edit Profile",
+        "change_password": "Change Password",
+        "save": "Save Changes"
+    },
+    "auth": {
+        "login": {
+            "title": "Login",
+            "submit": "Sign In",
+            "no_account": "Don't have an account? Register"
+        },
+        "register": {
+            "title": "Register",
+            "submit": "Sign Up",
+            "has_account": "Already have an account? Login"
+        },
+        "username": "Username",
+        "password": "Password",
+        "email": "Email",
+        "full_name": "Full Name"
+    },
+    "edit": {
+        "title": "Edit Listing",
+        "danger_zone": "Danger Zone",
+        "delete_warning": "Once you delete a listing, there is no going back.",
+        "delete_btn": "Delete Listing",
+        "save": "Save Changes",
+        "cancel": "Cancel"
+    },
+    "status": {
+        "label": "Status",
+        "published": "Published",
+        "draft": "Draft",
+        "sold": "Sold"
+    }
+}

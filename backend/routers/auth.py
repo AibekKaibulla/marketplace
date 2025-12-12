@@ -7,6 +7,7 @@ import schemas
 from database import get_db
 from auth_utils import (
     get_password_hash,
+    verify_password,
     authenticate_user,
     create_access_token,
     get_user_by_username,
@@ -98,26 +99,32 @@ async def get_current_user_info(
     """Get current user information"""
     return schemas.UserResponse.model_validate(current_user)
 
+
+@router.get("/user/{user_id}", response_model=schemas.UserResponse)
+async def get_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get user information by ID"""
+    user = db.query(models.User).filter(models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return schemas.UserResponse.model_validate(user)
+
 @router.put("/me", response_model=schemas.UserResponse)
 async def update_current_user(
-    updates: schemas.UserBase,
+    updates: schemas.UserUpdate,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update current user information"""
     
-    # check if new username is taken
-    if updates.username != current_user.username:
-        existing_user = get_user_by_username(db, updates.username)
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already taken"
-            )
+    # Get only the fields that were actually provided
+    update_data = updates.model_dump(exclude_unset=True)
     
     # check if new email is taken
-    if updates.email != current_user.email:
-        existing_user = get_user_by_email(db, updates.email)
+    if "email" in update_data and update_data["email"] != current_user.email:
+        existing_user = get_user_by_email(db, update_data["email"])
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -125,12 +132,32 @@ async def update_current_user(
             )
     
     # update user fields
-    current_user.username = updates.username
-    current_user.email = updates.email
-    current_user.display_name = updates.display_name
-    current_user.role = updates.role
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
     
     db.commit()
     db.refresh(current_user)
     
     return schemas.UserResponse.model_validate(current_user)
+
+
+@router.put("/me/password")
+async def change_password(
+    password_data: schemas.PasswordChange,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Change current user's password"""
+    
+    # Verify current password
+    if not verify_password(password_data.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Hash and update new password
+    current_user.password_hash = get_password_hash(password_data.new_password)
+    db.commit()
+    
+    return {"message": "Password updated successfully"}

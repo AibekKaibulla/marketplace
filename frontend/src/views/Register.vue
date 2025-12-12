@@ -2,23 +2,23 @@
   <div class="auth-container">
     <div class="auth-card card">
       <div class="auth-icon">✨</div>
-      <h2>Join Us Today!</h2>
+      <h2>{{ $t('auth.register.title') }}</h2>
       <p class="auth-subtitle text-secondary">Create your account to get started</p>
       
       <form @submit.prevent="handleRegister">
         <div class="form-group">
-          <label class="form-label">Username *</label>
+          <label class="form-label">{{ $t('auth.username') }} *</label>
           <input 
             type="text" 
             class="form-input"
-            placeholder="Choose a username"
+            :placeholder="$t('auth.username')"
             v-model="formData.username"
             required
           />
         </div>
         
         <div class="form-group">
-          <label class="form-label">Email *</label>
+          <label class="form-label">{{ $t('auth.email') }} *</label>
           <input 
             type="email" 
             class="form-input"
@@ -29,7 +29,7 @@
         </div>
         
         <div class="form-group">
-          <label class="form-label">Display Name</label>
+          <label class="form-label">{{ $t('auth.full_name') }}</label>
           <input 
             type="text" 
             class="form-input"
@@ -48,18 +48,18 @@
         </div>
         
         <div class="form-group">
-          <label class="form-label">Password *</label>
+          <label class="form-label">{{ $t('auth.password') }} *</label>
           <input 
             type="password" 
             class="form-input"
-            placeholder="Create a strong password"
+            :placeholder="$t('auth.password')"
             v-model="formData.password"
             required
           />
         </div>
         
         <button type="submit" class="btn btn-primary btn-block btn-lg">
-          Create Account
+          {{ $t('auth.register.submit') }}
         </button>
       </form>
       
@@ -67,9 +67,9 @@
         <span>OR</span>
       </div>
       
-      <p class="text-center text-secondary mb-md">Already have an account?</p>
+      <p class="text-center text-secondary mb-md">{{ $t('auth.register.has_account') }}</p>
       <router-link to="/login">
-        <button class="btn btn-secondary btn-block">Sign In</button>
+        <button class="btn btn-secondary btn-block">{{ $t('auth.login.submit') }}</button>
       </router-link>
     </div>
   </div>

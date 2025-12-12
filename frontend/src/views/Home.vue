@@ -3,14 +3,14 @@
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
-        <h1 class="hero-title">Welcome to Student Marketplace</h1>
+        <h1 class="hero-title">{{ $t('home.welcome') }}</h1>
         <p class="hero-subtitle">
           <template v-if="isLoggedIn">
-            Hello, <strong>{{ currentUser.displayName || currentUser.username }}</strong>!
+            {{ $t('home.subtitle', { name: currentUser.displayName || currentUser.username }) }}
             <span class="badge badge-primary">{{ currentUser.role }}</span>
           </template>
           <template v-else>
-            Your campus community for buying, selling, and trading
+            {{ $t('home.guest_subtitle') }}
           </template>
         </p>
       </div>
@@ -57,45 +57,45 @@
         <div class="grid grid-auto-fit">
           <div class="card text-center">
             <div class="feature-icon">📝</div>
-            <h3>Create Listing</h3>
+            <h3>{{ $t('home.create_listing.title') }}</h3>
             <p class="text-secondary mb-lg">
-              List items you want to sell or services you offer to other students
+              {{ $t('home.create_listing.desc') }}
             </p>
             <router-link to="/listings/create">
-              <button class="btn btn-primary btn-block">New Listing</button>
+              <button class="btn btn-primary btn-block">{{ $t('home.create_listing.btn') }}</button>
             </router-link>
           </div>
           
           <div class="card text-center">
             <div class="feature-icon">🔍</div>
-            <h3>Browse Items</h3>
+            <h3>{{ $t('home.browse.title') }}</h3>
             <p class="text-secondary mb-lg">
-              Discover great deals on textbooks, electronics, furniture, and more
+              {{ $t('home.browse.desc') }}
             </p>
             <router-link to="/listings">
-              <button class="btn btn-secondary btn-block">Start Shopping</button>
+              <button class="btn btn-secondary btn-block">{{ $t('home.browse.btn') }}</button>
             </router-link>
           </div>
           
           <div class="card text-center">
             <div class="feature-icon">💬</div>
-            <h3>Messages</h3>
+            <h3>{{ $t('home.messages.title') }}</h3>
             <p class="text-secondary mb-lg">
-              Chat with buyers and sellers to negotiate deals and arrange meetups
+              {{ $t('home.messages.desc') }}
             </p>
             <router-link to="/messages">
-              <button class="btn btn-secondary btn-block">View Messages</button>
+              <button class="btn btn-secondary btn-block">{{ $t('home.messages.btn') }}</button>
             </router-link>
           </div>
           
           <div class="card text-center">
             <div class="feature-icon">⭐</div>
-            <h3>Your Profile</h3>
+            <h3>{{ $t('profile.title') }}</h3>
             <p class="text-secondary mb-lg">
               Manage your listings, favorites, and account settings
             </p>
             <router-link to="/profile">
-              <button class="btn btn-secondary btn-block">My Profile</button>
+              <button class="btn btn-secondary btn-block">{{ $t('profile.title') }}</button>
             </router-link>
           </div>
         </div>

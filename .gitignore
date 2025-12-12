@@ -3,3 +3,11 @@ frontend/node_modules
 backend/__pycache__
 backend/.venv
 backend/.env
+backend/logs
+backend/uploads
+backend/check_admin.py
+backend/check_db.py
+backend/create_admin.py
+backend/create_db.py
+backend/migrate.py
+
